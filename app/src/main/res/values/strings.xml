@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">DigDone</string>
+    <string name="app_tagline">Recurring memo reminders</string>
 </resources>

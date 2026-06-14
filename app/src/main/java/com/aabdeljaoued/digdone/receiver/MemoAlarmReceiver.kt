@@ -17,10 +17,13 @@ class MemoAlarmReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             val memo = app.memoRepository.memoById(memoId)
             val settings = app.settingsRepository.currentSettings()
-            if (memo != null && settings.notificationsEnabled) {
-                app.notificationHelper.showMemoNotification(memo.title, memo.notes.ifBlank { "Memo is due." }, memoId.hashCode())
-                app.memoRepository.updateMemoDue(memo.id, memo.recurrence.nextDue(memo.firstDueAtMillis))
-                app.alarmScheduler.schedule(memo.copy(firstDueAtMillis = memo.recurrence.nextDue(memo.firstDueAtMillis)))
+            if (memo != null) {
+                if (settings.notificationsEnabled) {
+                    app.notificationHelper.showMemoNotification(memo.title, memo.notes.ifBlank { "Memo is due." }, memoId.hashCode())
+                }
+                val nextDueAt = memo.recurrence.nextDue(memo.firstDueAtMillis)
+                app.memoRepository.updateMemoDue(memo.id, nextDueAt)
+                app.alarmScheduler.schedule(memo.copy(firstDueAtMillis = nextDueAt))
             }
             pendingResult.finish()
         }

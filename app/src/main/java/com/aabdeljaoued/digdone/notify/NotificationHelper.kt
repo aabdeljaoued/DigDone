@@ -25,6 +25,7 @@ class NotificationHelper(private val context: Context) {
     }
 
     fun showMemoNotification(title: String, body: String, id: Int) {
+        if (!areNotificationsAllowed()) return
         ensureChannel()
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -35,4 +36,6 @@ class NotificationHelper(private val context: Context) {
             .build()
         NotificationManagerCompat.from(context).notify(id, notification)
     }
+
+    fun areNotificationsAllowed(): Boolean = NotificationManagerCompat.from(context).areNotificationsEnabled()
 }

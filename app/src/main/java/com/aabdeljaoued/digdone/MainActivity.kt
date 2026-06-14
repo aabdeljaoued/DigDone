@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aabdeljaoued.digdone.data.UiState
 import com.aabdeljaoued.digdone.ui.DigDoneApp
 import com.aabdeljaoued.digdone.ui.theme.DigDoneTheme
 import kotlinx.coroutines.launch
@@ -24,21 +25,21 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
         setContent {
             DigDoneTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     val context = LocalContext.current
                     val app = context.applicationContext as DigDoneApplication
-                    val state by app.memoRepository.observeUiState().collectAsStateWithLifecycle()
+                    val state by app.memoRepository.observeUiState().collectAsStateWithLifecycle(UiState())
                     LaunchedEffect(Unit) {
                         app.alarmScheduler.rescheduleAll()
                     }
                     DigDoneApp(
                         state = state,
                         onCreateMemo = { title, notes, firstDueAtMillis, recurrence ->
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !app.notificationHelper.areNotificationsAllowed()) {
+                                requestNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
                             lifecycleScope.launch {
                                 app.memoRepository.addMemo(title, notes, firstDueAtMillis, recurrence)
                                 app.alarmScheduler.rescheduleAll()
@@ -47,6 +48,7 @@ class MainActivity : ComponentActivity() {
                         onDeleteMemo = { id ->
                             lifecycleScope.launch {
                                 app.memoRepository.deleteMemo(id)
+                                app.alarmScheduler.cancel(id)
                                 app.alarmScheduler.rescheduleAll()
                             }
                         },
@@ -56,6 +58,9 @@ class MainActivity : ComponentActivity() {
                             accepted
                         },
                         onEnableNotifications = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !app.notificationHelper.areNotificationsAllowed()) {
+                                requestNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
                             app.settingsRepository.setNotificationsEnabled(true)
                             app.alarmScheduler.rescheduleAll()
                         }

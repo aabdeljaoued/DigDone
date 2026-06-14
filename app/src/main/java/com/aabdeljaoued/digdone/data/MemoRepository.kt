@@ -18,7 +18,10 @@ import java.util.UUID
 
 private val Context.memoDataStore by preferencesDataStore(name = "memo_store")
 
-class MemoRepository(private val context: Context) {
+class MemoRepository(
+    private val context: Context,
+    private val notificationPermissionGranted: () -> Boolean = { true },
+) {
     private val json = Json { ignoreUnknownKeys = true; prettyPrint = false }
     private val memosKey = stringPreferencesKey("memos")
 
@@ -27,6 +30,7 @@ class MemoRepository(private val context: Context) {
             memos = memos.sortedBy { it.firstDueAtMillis },
             notificationsEnabled = settings.notificationsEnabled,
             notificationPhrase = settings.notificationPhrase,
+            notificationPermissionGranted = notificationPermissionGranted(),
         )
     }
 

@@ -1,6 +1,8 @@
 package com.aabdeljaoued.digdone.model
 
 import kotlinx.serialization.Serializable
+import java.time.Instant
+import java.time.ZoneId
 
 @Serializable
 data class Memo(
@@ -21,10 +23,14 @@ enum class Recurrence {
     YEARLY,
 }
 
-fun Recurrence.nextDue(afterMillis: Long): Long = when (this) {
-    Recurrence.HOURLY -> afterMillis + 60 * 60 * 1000L
-    Recurrence.DAILY -> afterMillis + 24 * 60 * 60 * 1000L
-    Recurrence.WEEKLY -> afterMillis + 7 * 24 * 60 * 60 * 1000L
-    Recurrence.MONTHLY -> afterMillis + 30L * 24 * 60 * 60 * 1000L
-    Recurrence.YEARLY -> afterMillis + 365L * 24 * 60 * 60 * 1000L
+fun Recurrence.nextDue(afterMillis: Long, zoneId: ZoneId = ZoneId.systemDefault()): Long {
+    val dueAt = Instant.ofEpochMilli(afterMillis).atZone(zoneId)
+    val nextDueAt = when (this) {
+        Recurrence.HOURLY -> dueAt.plusHours(1)
+        Recurrence.DAILY -> dueAt.plusDays(1)
+        Recurrence.WEEKLY -> dueAt.plusWeeks(1)
+        Recurrence.MONTHLY -> dueAt.plusMonths(1)
+        Recurrence.YEARLY -> dueAt.plusYears(1)
+    }
+    return nextDueAt.toInstant().toEpochMilli()
 }

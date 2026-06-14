@@ -57,6 +57,9 @@ fun DigDoneApp(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (!state.notificationPermissionGranted) {
+                Text("Notification permission is off. The app will ask again when you create or enable reminders.")
+            }
             Button(onClick = { showSettings = true }) { Text(if (state.notificationsEnabled) "Disable notifications" else "Enable notifications") }
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 items(state.memos, key = { it.id }) { memo ->
@@ -65,6 +68,7 @@ fun DigDoneApp(
                             Text(memo.title, style = MaterialTheme.typography.titleMedium)
                             Text(memo.notes.ifBlank { "No notes" })
                             Text("Recurrence: ${memo.recurrence}")
+                            Text("Next due: ${java.time.Instant.ofEpochMilli(memo.firstDueAtMillis).atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()}")
                             IconButton(onClick = { onDeleteMemo(memo.id) }) {
                                 Icon(Icons.Default.Delete, contentDescription = "Delete memo")
                             }

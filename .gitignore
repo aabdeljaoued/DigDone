@@ -4,5 +4,10 @@
 build/
 captures/
 local.properties
+signing.properties
+*.jks
+*.keystore
+*.p12
+play-upload/
 *.iml
 .DS_Store

@@ -6,4 +6,5 @@ data class UiState(
     val memos: List<Memo> = emptyList(),
     val notificationsEnabled: Boolean = true,
     val notificationPhrase: String = "",
+    val notificationPermissionGranted: Boolean = true,
 )
