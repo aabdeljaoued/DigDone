@@ -51,17 +51,13 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                         onDisableNotifications = { phrase ->
-                            lifecycleScope.launch {
-                                if (app.settingsRepository.disableNotificationsWithPhrase(phrase)) {
-                                    app.alarmScheduler.rescheduleAll()
-                                }
-                            }
+                            val accepted = app.settingsRepository.disableNotificationsWithPhrase(phrase)
+                            if (accepted) app.alarmScheduler.rescheduleAll()
+                            accepted
                         },
                         onEnableNotifications = {
-                            lifecycleScope.launch {
-                                app.settingsRepository.setNotificationsEnabled(true)
-                                app.alarmScheduler.rescheduleAll()
-                            }
+                            app.settingsRepository.setNotificationsEnabled(true)
+                            app.alarmScheduler.rescheduleAll()
                         }
                     )
                 }

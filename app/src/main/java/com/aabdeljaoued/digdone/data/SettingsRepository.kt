@@ -34,11 +34,14 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun disableNotificationsWithPhrase(phrase: String): Boolean {
-        val accepted = phrase.trim().isNotBlank()
+        val entered = phrase.trim()
+        if (entered.isBlank()) return false
+        val current = currentSettings()
+        val accepted = current.notificationPhrase.isBlank() || current.notificationPhrase == entered
         if (accepted) {
             context.settingsDataStore.edit { prefs ->
                 prefs[enabledKey] = false
-                prefs[phraseKey] = phrase.trim()
+                prefs[phraseKey] = entered
             }
         }
         return accepted

@@ -16,14 +16,12 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,8 +37,8 @@ fun DigDoneApp(
     state: UiState,
     onCreateMemo: (String, String, Long, Recurrence) -> Unit,
     onDeleteMemo: (String) -> Unit,
-    onDisableNotifications: (String) -> Unit,
-    onEnableNotifications: () -> Unit,
+    onDisableNotifications: suspend (String) -> Boolean,
+    onEnableNotifications: suspend () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var showCreate by remember { mutableStateOf(false) }
@@ -80,14 +78,8 @@ fun DigDoneApp(
         SettingsDialog(
             enabled = state.notificationsEnabled,
             onDismiss = { showSettings = false },
-            onDisable = { phrase ->
-                onDisableNotifications(phrase)
-                showSettings = false
-            },
-            onEnable = {
-                onEnableNotifications()
-                showSettings = false
-            }
+            onDisable = onDisableNotifications,
+            onEnable = onEnableNotifications,
         )
     }
     if (showCreate) {
